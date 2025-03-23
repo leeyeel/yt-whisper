@@ -1,21 +1,27 @@
-import os
-
-import pkg_resources
 from setuptools import setup, find_packages
 
 setup(
-    version="1.0",
-    name="yt_whisper",
+    name="yt-whisper",
+    version="0.1.0",
+    description="YouTube downloader and subtitle generator using Whisper",
+    author="leo",
+    author_email="mumuli52@gmail.com",
     packages=find_packages(),
-    py_modules=["yt_whisper"],
-    author="Miguel Piedrafita",
-    install_requires=[
-        'yt-dlp',
-        'whisper @ git+https://github.com/openai/whisper.git@main#egg=whisper'
-    ],
-    description="Generate subtitles for YouTube videos using Whisper",
-    entry_points={
-        'console_scripts': ['yt_whisper=yt_whisper.cli:main'],
-    },
     include_package_data=True,
+    install_requires=[
+        "yt-dlp",
+        "openai-whisper",
+    ],
+    entry_points={
+        "console_scripts": [
+            "yt-whisper = yt_whisper.cli:main",
+        ],
+    },
+    python_requires=">=3.8",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
 )
+

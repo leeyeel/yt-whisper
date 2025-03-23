@@ -1,5 +1,5 @@
 from typing import Iterator, TextIO
-
+import re
 
 def str2bool(string):
     str2val = {"True": True, "False": False}
@@ -76,6 +76,9 @@ def write_srt(transcript: Iterator[dict], file: TextIO, line_length: int = 0):
             flush=True,
         )
 
-def slugify(title):
-    return "".join(c if c.isalnum() else "_" for c in title).rstrip("_")
+def slugify(value):
+    value = str(value)
+    value = re.sub(r"[^\w\s-]", "", value).strip().lower()
+    return re.sub(r"[-\s]+", "-", value)
+
 

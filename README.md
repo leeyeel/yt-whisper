@@ -1,44 +1,103 @@
-# Automatic YouTube subtitle generation
+## 🌐 Language | 语言选择
 
-This repository uses `yt-dlp` and [OpenAI's Whisper](https://openai.com/blog/whisper) to generate subtitle files for any youtube video.
+- 🇺🇸 [English](#yt-whisper)（default）
+- 🇨🇳 [中文](./README_CN.md)
 
-## Installation
+# yt-whisper
 
-To get started, you'll need Python 3.7 or newer. Install the binary by running the following command:
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-    pip install git+https://github.com/m1guelpf/yt-whisper.git
+**yt-whisper** is a command-line tool for downloading YouTube videos, audio, and subtitles — with automatic subtitle generation powered by OpenAI's [Whisper](https://github.com/openai/whisper).
 
-You'll also need to install [`ffmpeg`](https://ffmpeg.org/), which is available from most package managers:
+> ✅ Based on [m1guelpf/yt-whisper](https://github.com/m1guelpf/yt-whisper), modernized and extended with new features such as audio-only/video-only downloading, YouTube subtitle detection fallback, format selection, and CLI flexibility.
+
+---
+
+## ✨ Features
+
+- 🎥 Download full YouTube videos
+- 🔊 Extract audio as `.mp3`
+- 🎬 Download video-only (no audio)
+- 📝 Download subtitles:
+  - Prefer official YouTube captions
+  - Fallback to Whisper-generated subtitles when unavailable
+- 🧠 Supports OpenAI Whisper models (`tiny` to `large`)
+- 🌍 Auto-detect or manually specify spoken language
+- 💬 Output in `.srt` or `.vtt` format
+- 🧪 Simple CLI for scripting and automation
+
+---
+
+## 📦 Installation
 
 ```bash
-# on Ubuntu or Debian
-sudo apt update && sudo apt install ffmpeg
+# Clone the repo
+git clone https://github.com/yourusername/yt-whisper.git
+cd yt-whisper
 
-# on MacOS using Homebrew (https://brew.sh/)
-brew install ffmpeg
+# Install dependencies
+pip install -r requirements.txt
 
-# on Windows using Chocolatey (https://chocolatey.org/)
-choco install ffmpeg
+# Register CLI tool
+pip install -e .
 ```
 
-## Usage
+You can now use `yt-whisper` as a global command:
 
-The following command will generate a VTT file from the specified YouTube video
+```bash
+yt-whisper --help
+```
 
-    yt_whisper "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+---
 
-The default setting (which selects the `small` model) works well for transcribing English. You can optionally use a bigger model for better results (especially with other languages). The available models are `tiny`, `tiny.en`, `base`, `base.en`, `small`, `small.en`, `medium`, `medium.en`, `large`.
+## 🚀 Usage
 
-    yt_whisper "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --model medium
+### Download full video and subtitles
+```bash
+yt-whisper "https://youtube.com/watch?v=XXXX" --download video subtitles
+```
 
-Adding `--task translate` will translate the subtitles into English:
+### Download audio and generate subtitles (if YouTube has none)
+```bash
+yt-whisper "https://youtube.com/watch?v=XXXX" --download audio subtitles
+```
 
-    yt_whisper "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --task translate
+### Download video-only (no audio)
+```bash
+yt-whisper "https://youtube.com/watch?v=XXXX" --download video-only
+```
 
-Run the following to view all available options:
+### Specify subtitle format and Whisper model
+```bash
+yt-whisper "https://youtube.com/watch?v=XXXX" \
+  --download subtitles \
+  --format vtt \
+  --model base
+```
 
-    yt_whisper --help
+---
 
-## License
+## 🧠 Whisper Dependency
 
-This script is open-source and licensed under the MIT License. For more details, check the [LICENSE](LICENSE) file.
+This project uses [openai/whisper](https://github.com/openai/whisper) under the hood for speech-to-text generation. You may benefit from GPU acceleration (via `CUDA`) if available.
+
+---
+
+## 📁 Output
+
+All files are saved to the `--output_dir` directory (default: `./output/`):
+
+- `title.mp4` – downloaded video
+- `title.m4a` – extracted audio
+- `title.srt` or `title.vtt` – subtitles (YouTube or Whisper-generated)
+
+---
+
+## 🙏 Credits
+
+- Original project: [m1guelpf/yt-whisper](https://github.com/m1guelpf/yt-whisper)
+- Audio transcription: [openai/whisper](https://github.com/openai/whisper)
+- YouTube download: [yt-dlp/yt-dlp](https://github.com/yt-dlp/yt-dlp)
+
+---
