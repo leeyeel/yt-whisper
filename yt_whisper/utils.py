@@ -81,4 +81,8 @@ def slugify(value):
     value = re.sub(r"[^\w\s-]", "", value).strip().lower()
     return re.sub(r"[-\s]+", "-", value)
 
+def clean_url(url: str) -> str:
+    if url.startswith("http://") or url.startswith("https://"):
+        return url.replace("\\", "")
+    return url
 

@@ -5,7 +5,7 @@ import yt_dlp
 import whisper
 import glob
 import subprocess
-from .utils import slugify, write_srt, write_vtt
+from .utils import slugify, clean_url, write_srt, write_vtt
 
 def parse_args():
     parser = argparse.ArgumentParser(description="YouTube video/audio/subtitle downloader with Whisper support")
@@ -116,6 +116,7 @@ def generate_whisper_subtitles(audio_path, model_name, language, task):
 
 def main():
     args = parse_args()
+    args.url = clean_url(args.url)
     os.makedirs(args.output_dir, exist_ok=True)
     temp_dir = tempfile.gettempdir()
 
