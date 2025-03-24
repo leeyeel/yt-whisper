@@ -17,7 +17,7 @@
 ## ✨ Features
 
 - 🎥 Download full YouTube videos
-- 🔊 Extract audio as `.mp3`
+- 🔊 Extract audio as `.m4a`
 - 🎬 Download video-only (no audio)
 - 📝 Download subtitles:
   - Prefer official YouTube captions

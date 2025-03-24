@@ -10,22 +10,6 @@ def str2bool(string):
             f"Expected one of {set(str2val.keys())}, got {string}")
 
 
-def format_timestamp(seconds: float, always_include_hours: bool = False, decimal_marker: str = '.'):
-    assert seconds >= 0, "non-negative timestamp expected"
-    milliseconds = round(seconds * 1000.0)
-
-    hours = milliseconds // 3_600_000
-    milliseconds -= hours * 3_600_000
-
-    minutes = milliseconds // 60_000
-    milliseconds -= minutes * 60_000
-
-    seconds = milliseconds // 1_000
-    milliseconds -= seconds * 1_000
-
-    hours_marker = f"{hours:02d}:" if always_include_hours or hours > 0 else ""
-    return f"{hours_marker}{minutes:02d}:{seconds:02d}{decimal_marker}{milliseconds:03d}"
-
 def break_line(line: str, length: int):
     break_index = min(len(line)//2, length) # split evenly or at maximum length
 
@@ -62,19 +46,60 @@ def write_vtt(transcript: Iterator[dict], file: TextIO, line_length: int = 0):
             flush=True,
         )
 
+def format_timestamp(seconds: float):
+    hours, remainder = divmod(seconds, 3600)
+    minutes, secs = divmod(remainder, 60)
+    millis = (secs - int(secs)) * 1000
+    return f"{int(hours):02}:{int(minutes):02}:{int(secs):02},{int(millis):03}"
 
-def write_srt(transcript: Iterator[dict], file: TextIO, line_length: int = 0):
-    for i, segment in enumerate(transcript, start=1):
-        segment = process_segment(segment, line_length=line_length)
+def write_srt(segments, file, min_duration=2.0, auto_merge=True):
+    """
+    Writes improved SRT subtitles to the given file.
+    Automatically merges short segments and enforces a minimum display duration.
+    """
 
-        print(
-            f"{i}\n"
-            f"{format_timestamp(segment['start'], always_include_hours=True, decimal_marker=',')} --> "
-            f"{format_timestamp(segment['end'], always_include_hours=True, decimal_marker=',')}\n"
-            f"{segment['text'].strip().replace('-->', '->')}\n",
-            file=file,
-            flush=True,
-        )
+    # --- Step 1: Auto-merge short segments ---
+    if auto_merge:
+        merged = []
+        buffer = segments[0]
+        for seg in segments[1:]:
+            buffer_duration = buffer["end"] - buffer["start"]
+            if buffer_duration < min_duration:
+                # Merge this segment into buffer
+                buffer["text"] = buffer["text"].strip() + " " + seg["text"].strip()
+                buffer["end"] = seg["end"]
+            else:
+                merged.append(buffer)
+                buffer = seg
+        merged.append(buffer)
+    else:
+        merged = segments
+
+    # --- Step 2: Enforce min duration + avoid overlap ---
+    for i, seg in enumerate(merged):
+        seg["text"] = re.sub(r"\s+", " ", seg["text"].strip())
+
+        seg_start = seg["start"]
+        seg_end = seg["end"]
+        duration = seg_end - seg_start
+
+        # Enforce minimum duration
+        if duration < min_duration:
+            seg_end = seg_start + min_duration
+
+        # Avoid overlapping with next segment
+        if i + 1 < len(merged):
+            next_start = merged[i + 1]["start"]
+            if seg_end > next_start:
+                seg_end = next_start - 0.1
+
+        seg["end"] = round(seg_end, 3)
+
+    # --- Step 3: Write to file ---
+    for i, seg in enumerate(merged, start=1):
+        file.write(f"{i}\n")
+        file.write(f"{format_timestamp(seg['start'])} --> {format_timestamp(seg['end'])}\n")
+        file.write(f"{seg['text']}\n\n")
 
 def slugify(value):
     value = str(value)
