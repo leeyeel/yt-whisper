@@ -3,3 +3,4 @@ dist
 *.egg-info
 yt_whisper/__pycache__
 build
+output

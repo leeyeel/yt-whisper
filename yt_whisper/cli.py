@@ -22,10 +22,12 @@ def parse_args():
     parser.add_argument("--format", default="srt", choices=["srt", "vtt"],
                         help="Subtitle file format")
     parser.add_argument("--output_dir", default="./output", help="Output directory")
+    parser.add_argument("--force_whisper", action="store_true",
+                        help="Force subtitle generation with Whisper even if YouTube subtitles exist")
 
     return parser.parse_args()
 
-def download_youtube(url, download_types, temp_dir):
+def download_youtube(url, download_types, temp_dir, force_whisper):
     common_opts = {
         "quiet": False,
         "noplaylist": True,
@@ -78,7 +80,7 @@ def download_youtube(url, download_types, temp_dir):
     if "subtitles" in download_types:
         subtitle_files = glob.glob(os.path.join(temp_dir, f"{video_id}*.srt")) + \
                          glob.glob(os.path.join(temp_dir, f"{video_id}*.vtt"))
-        if subtitle_files:
+        if subtitle_files and not force_whisper:
             subtitle_path = subtitle_files[0]
 
         # If no subtitles, ensure audio is available for Whisper transcription
@@ -118,9 +120,8 @@ def main():
     args = parse_args()
     args.url = clean_url(args.url)
     os.makedirs(args.output_dir, exist_ok=True)
-    temp_dir = tempfile.gettempdir()
 
-    title, video_path, audio_path, subtitle_path = download_youtube(args.url, args.download, temp_dir)
+    title, video_path, audio_path, subtitle_path = download_youtube(args.url, args.download, args.output_dir, args.force_whisper)
 
     # Save video
     if video_path and ("video" in args.download or "video-only" in args.download):
@@ -147,7 +148,7 @@ def main():
             if not audio_path:
                 print("⚠️ No audio found. Downloading audio for subtitle generation...")
                 args.download.append("audio")
-                _, _, audio_path, _ = download_youtube(args.url, ["audio"], temp_dir)
+                _, _, audio_path, _ = download_youtube(args.url, ["audio"], args.output_dirt, args.force_whisper)
 
             if audio_path:
                 print("🤖 Generating subtitles with Whisper...")
